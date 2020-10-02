@@ -60,19 +60,28 @@ class HtmlSubsection
     end
 end
 
-#source = eat('https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates')
-#source = eat('https://www.bagpipeonline.com/opinions/2020/9/12/prevent-a-twindemic-get-a-vaccine')
-source = eat(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
-    .to_HtmlSubsection
-#block = source.get_block(/\<head\>.*\<\/head\>/m)
-article = source
-    .get_block(/\<article class=.*?\<\/article\>/m)
-author = article.get_author
-title = article.get_title
-articleInfo = article
-    .get_block(/\<header\>.*?\<\/header\>/m)
-articleText = article
-    .get_block(/\<div class="sqs-block-content"\>.*?\<\/div\>/m)
-puts title
-puts "by #{author}\n\n"
-puts articleText.get_text
+class BagpipeArticle
+    def initialize link
+        @link = link
+    end
+
+    def get_data
+        source = eat(@link).to_HtmlSubsection
+        article = source.get_block(/\<article class=.*?\<\/article\>/m)
+        @author = article.get_author
+        @title = article.get_title
+        @text = article.get_block(/\<div class="sqs-block-content"\>.*?\<\/div\>/m).get_text
+    end
+
+    def print_data
+        puts @title
+        puts "by #{@author}\n\n"
+        puts @text
+    end
+end
+
+# 'https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates'
+# 'https://www.bagpipeonline.com/opinions/2020/9/12/prevent-a-twindemic-get-a-vaccine'
+article = BagpipeArticle.new(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
+article.get_data
+article.print_data
