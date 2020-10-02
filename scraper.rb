@@ -32,31 +32,37 @@ class HtmlSubsection
     end
 
     def get_title
+        if @subtexts.length == 0; return ""; end
         match = @subtexts[0].match(/\<a.*?\>(.*?)\<\/a\>/)
-        return match[1]
+        return match[1] || ""
     end
 
     def get_author
-        match = @subtexts[0].match(/\<article.*?\>/)
-        match = match[0].match(/hentry author.*? /)
-        return match[0].gsub(/(hentry author-|-| )/, "hentry author-" => "", "-" => " ", " " => "")
+        if @subtexts.length == 0; return ""; end
+        match = @subtexts[0].match(/\<article.*?\>/) || [""]
+        match = match[0].match(/hentry.*?author.*? /) || [""]
+        return match[0].gsub(/hentry.*?author-| |(.)/, '\1').gsub("-", " ") || ""
     end
 
     def get_text
         text = ""
         @subtexts.each {|subtext|
-            subtext.scan(/(?<="white-space:pre-wrap;"\>).*?(?=\<\/p)/) {|paragraph|
-                text += paragraph.gsub(/\<\/?(strong|em|a|span).*?\/?\>/, "") + "\n"
+            subtext.scan(/\<p.*?\>.*?\<\/p\>/) {|paragraph|
+                text += paragraph.gsub(/\<\/?(p|strong|em|br|a|span).*?\/?\>/, "") + "\n"
             }
         }
         return text
+            .gsub(/“|”/, '"')
+            .gsub(/‘|’/, "'")
             .gsub(/\n+/, "\n\n")
             .gsub(/(&nbsp;| )+/, " ")
+            .gsub(/[^a-zA-Z0-9,:;'"\.\!\?\@\#\$\%\&\*\-\+\=\/\{\}\[\]\(\)\n]/, " ")
     end
 end
 
+#source = eat('https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates')
 #source = eat('https://www.bagpipeonline.com/opinions/2020/9/12/prevent-a-twindemic-get-a-vaccine')
-source = eat('https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates')
+source = eat(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
     .to_HtmlSubsection
 #block = source.get_block(/\<head\>.*\<\/head\>/m)
 article = source
