@@ -90,7 +90,14 @@ class LinkScraper
     end
 
     def set_min_date date
-        @minDate = date
+        @minDate = get_date date
+    end
+
+    def get_date string, errDate = '1970/1/1'
+        match = string.match(/\d{4}\/\d\d?\/\d\d?/)
+        date = match[0] || errDate
+        date = date.gsub(/\/(\d)\//, '/0\1/').gsub(/\/(\d)\Z/, '/0\1')
+        return date
     end
 
     def scrape
@@ -106,11 +113,6 @@ class LinkScraper
                     end
                 end
         end
-    end
-
-    def get_date linkTail, errDate = '1970/1/1' # TODO return date as strict mm and dd for sorting
-        match = linkTail.match(/\d{4}\/\d\d?\/\d\d?/)
-        return match[0] || errDate
     end
 
     def test
