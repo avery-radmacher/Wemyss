@@ -113,21 +113,18 @@ class LinkScraper
                     end
                 end
         end
-    end
-
-    def test
-        @links.each do |link|
-            puts link
-        end
+        return @links
     end
 end
 
-# 'https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates'
-# 'https://www.bagpipeonline.com/opinions/2020/9/12/prevent-a-twindemic-get-a-vaccine'
-# article = BagpipeArticle.new(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
-# article.get_data
-# article.print_data
-scraper = LinkScraper.new(['https://www.bagpipeonline.com/news-archive'])
-scraper.set_min_date '2020/3/28'
-scraper.scrape
-scraper.test
+scraper = LinkScraper.new([
+    'https://www.bagpipeonline.com/news-archive',
+    'https://www.bagpipeonline.com/arts-archive',
+    'https://www.bagpipeonline.com/opinions-archive',
+    'https://www.bagpipeonline.com/sports-archive'])
+scraper.set_min_date '2020/9/1'
+scraper.scrape.each do |articleLink|
+    article = BagpipeArticle.new(articleLink)
+    article.get_data
+    article.print_data
+end
