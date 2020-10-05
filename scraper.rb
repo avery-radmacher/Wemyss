@@ -1,5 +1,18 @@
 require 'eat'
 
+def consume link
+    sleepTime = 0.001
+    while
+        begin
+            return eat link
+        rescue HTTPClient::BadResponseError
+            puts "Too many HTTP requests; sleeping #{sleepTime} s"
+            sleep(sleepTime)
+            sleepTime *= 2
+        end
+    end
+end
+
 class String
     def to_HtmlSubsection
         return HtmlSubsection.new self
@@ -70,7 +83,7 @@ class BagpipeArticle
     end
 
     def get_data
-        source = eat(@link).to_HtmlSubsection
+        source = consume(@link).to_HtmlSubsection
         article = source.get_block(/\<article class=.*?\<\/article\>/m)
         @author = article.get_author
         @title = article.get_title
@@ -103,7 +116,7 @@ class LinkScraper
     def scrape
         @links = []
         @listLinks.each do |listLink|
-            eat(listLink).to_HtmlSubsection
+            consume(listLink).to_HtmlSubsection
                 .get_block(/\<ul class="archive-item-list"\>.*?\<\/ul/m)    # filter to monthly lists
                 .get_block(/(?<=\<a href=")[^"]*/)                          # filter to article links
                 .get_html
@@ -122,9 +135,10 @@ scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/arts-archive',
     'https://www.bagpipeonline.com/opinions-archive',
     'https://www.bagpipeonline.com/sports-archive'])
-scraper.set_min_date '2020/9/1'
+scraper.set_min_date '2010/9/1'
 scraper.scrape.each do |articleLink|
+    puts articleLink
     article = BagpipeArticle.new(articleLink)
     article.get_data
-    article.print_data
+    #article.print_data
 end
