@@ -58,6 +58,10 @@ class HtmlSubsection
             .gsub(/(&nbsp;| )+/, " ")
             .gsub(/[^a-zA-Z0-9,:;'"\.\!\?\@\#\$\%\&\*\-\+\=\/\{\}\[\]\(\)\n]/, " ")
     end
+
+    def get_html
+        return @subtexts
+    end
 end
 
 class BagpipeArticle
@@ -80,8 +84,48 @@ class BagpipeArticle
     end
 end
 
+class LinkScraper
+    def initialize links
+        @listLinks = links
+    end
+
+    def set_min_date date
+        @minDate = date
+    end
+
+    def scrape
+        @links = []
+        @listLinks.each do |listLink|
+            eat(listLink).to_HtmlSubsection
+                .get_block(/\<ul class="archive-item-list"\>.*?\<\/ul/m)    # filter to monthly lists
+                .get_block(/(?<=\<a href=")[^"]*/)                          # filter to article links
+                .get_html
+                .each do |linkTail|
+                    if !@minDate || @minDate <= get_date(linkTail)
+                        @links << 'https://www.bagpipeonline.com' + linkTail
+                    end
+                end
+        end
+    end
+
+    def get_date linkTail, errDate = '1970/1/1' # TODO return date as strict mm and dd for sorting
+        match = linkTail.match(/\d{4}\/\d\d?\/\d\d?/)
+        return match[0] || errDate
+    end
+
+    def test
+        @links.each do |link|
+            puts link
+        end
+    end
+end
+
 # 'https://www.bagpipeonline.com/news/2020/9/15/policy-overview-of-presidential-candidates'
 # 'https://www.bagpipeonline.com/opinions/2020/9/12/prevent-a-twindemic-get-a-vaccine'
-article = BagpipeArticle.new(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
-article.get_data
-article.print_data
+# article = BagpipeArticle.new(ARGV[0] || 'https://www.bagpipeonline.com/news/2015/3/31/dr-whitebro-tempts-students-with-art-again')
+# article.get_data
+# article.print_data
+scraper = LinkScraper.new(['https://www.bagpipeonline.com/news-archive'])
+scraper.set_min_date '2020/3/28'
+scraper.scrape
+scraper.test
