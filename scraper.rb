@@ -10,7 +10,7 @@ def consume link
             sleep(sleepTime)
             sleepTime *= 2
         rescue HTTPClient::ReceiveTimeoutError
-            $logFile.write "HTTP: Timeout error, retrying in 0.005s"
+            $logFile.write "HTTP: Timeout error, retrying in 0.005s\n"
             sleep(0.005)
         end
     end
@@ -141,7 +141,7 @@ scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/arts-archive',
     'https://www.bagpipeonline.com/opinions-archive',
     'https://www.bagpipeonline.com/sports-archive'])
-scraper.set_min_date '2013/7/1'
+scraper.set_min_date ARGV[2] || ""
 scraper.scrape.each do |articleLink|
     $logFile.write "Reading: #{articleLink}...\n"
     article = BagpipeArticle.new(articleLink)
