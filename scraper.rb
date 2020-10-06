@@ -6,7 +6,7 @@ def consume link
         begin
             return eat link
         rescue HTTPClient::BadResponseError
-            puts "Too many HTTP requests; sleeping #{sleepTime} s"
+            $logFile.write "HTTP: Too many HTTP requests; sleeping #{sleepTime} s\n"
             sleep(sleepTime)
             sleepTime *= 2
         end
@@ -91,9 +91,8 @@ class BagpipeArticle
     end
 
     def print_data
-        puts @title
-        puts "by #{@author}\n\n"
-        puts @text
+        text = @text.gsub(/\s+/, " ")
+        $dataFile.write "#{@title}|#{@author}|||#{text}\n"
     end
 end
 
@@ -130,15 +129,19 @@ class LinkScraper
     end
 end
 
+$dataFile = ARGV[0] && ARGV[0] != "-" ? File.open(ARGV[0], mode = "w") : $stdout
+$logFile = ARGV[1] && ARGV[1] != "-" ? File.open(ARGV[1], mode = "w") : $stdout
+
 scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/news-archive',
     'https://www.bagpipeonline.com/arts-archive',
     'https://www.bagpipeonline.com/opinions-archive',
     'https://www.bagpipeonline.com/sports-archive'])
-scraper.set_min_date '2010/9/1'
+scraper.set_min_date '2013/9/1'
 scraper.scrape.each do |articleLink|
-    puts articleLink
+    $logFile.write "Reading: #{articleLink}..."
     article = BagpipeArticle.new(articleLink)
     article.get_data
-    #article.print_data
+    $logFile.write "done."
+    article.print_data
 end
