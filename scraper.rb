@@ -135,12 +135,13 @@ end
 $dataFile = ARGV[0] && ARGV[0] != "-" ? File.open(ARGV[0], mode = "w") : $stdout
 $logFile = ARGV[1] && ARGV[1] != "-" ? File.open(ARGV[1], mode = "w") : $stdout
 
+startTime = Time.now
 scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/news-archive',
     'https://www.bagpipeonline.com/arts-archive',
     'https://www.bagpipeonline.com/opinions-archive',
     'https://www.bagpipeonline.com/sports-archive'])
-scraper.set_min_date '2013/9/1'
+scraper.set_min_date '2013/7/1'
 scraper.scrape.each do |articleLink|
     $logFile.write "Reading: #{articleLink}...\n"
     article = BagpipeArticle.new(articleLink)
@@ -148,3 +149,9 @@ scraper.scrape.each do |articleLink|
     $logFile.write "done.\n"
     article.print_data
 end
+endTime = Time.now
+durationTime = (endTime - startTime).round
+duration = (durationTime > 3600 ? (durationTime/3600).to_i.to_s + "h " : "") +
+    (durationTime > 60 ? (durationTime/60%60).to_i.to_s + "m " : "") + 
+    "#{(durationTime % 60).to_i}s"
+$logFile.write "Completed in #{duration}"
