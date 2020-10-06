@@ -6,9 +6,12 @@ def consume link
         begin
             return eat link
         rescue HTTPClient::BadResponseError
-            $logFile.write "HTTP: Too many HTTP requests; sleeping #{sleepTime} s\n"
+            $logFile.write "HTTP: Too many HTTP requests; sleeping #{sleepTime}s\n"
             sleep(sleepTime)
             sleepTime *= 2
+        rescue HTTPClient::ReceiveTimeoutError
+            $logFile.write "HTTP: Timeout error, retrying in 0.005s"
+            sleep(0.005)
         end
     end
 end
@@ -139,9 +142,9 @@ scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/sports-archive'])
 scraper.set_min_date '2013/9/1'
 scraper.scrape.each do |articleLink|
-    $logFile.write "Reading: #{articleLink}..."
+    $logFile.write "Reading: #{articleLink}...\n"
     article = BagpipeArticle.new(articleLink)
     article.get_data
-    $logFile.write "done."
+    $logFile.write "done.\n"
     article.print_data
 end
