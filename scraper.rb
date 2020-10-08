@@ -93,11 +93,25 @@ class BagpipeArticle
         @author = article.get_author
         @title = article.get_title
         @text = article.get_block(/\<div class="sqs-block-content"\>.*?\<\/div\>/m).get_text
+        @category = get_category
+        @date = get_date
+    end
+
+    def get_category
+        @link.match(/\.com\/(\w+)/)[1]
+    end
+
+    def get_date
+        @link.match(/\.com\/\w+\/(\d*\/\d*\/\d*)/)[1]
+    end
+
+    def self.print_header
+        $dataFile.write "link|title|date|category|author|gender|year|text\n"
     end
 
     def print_data
         text = @text.gsub(/\s+/, " ")
-        $dataFile.write "#{@title}|#{@author}|||#{text}\n"
+        $dataFile.write "#{@link}|#{@title}|#{@date}|#{@category}|#{@author}|||#{text}\n"
     end
 end
 
@@ -111,8 +125,8 @@ class LinkScraper
     end
 
     def get_date string, errDate = '1970/1/1'
-        match = string.match(/\d{4}\/\d\d?\/\d\d?/)
-        date = match[0] || errDate
+        match = string.match(/\d{4}\/\d\d?\/\d\d?/) || [errDate]
+        date = match[0]
         date = date.gsub(/\/(\d)\//, '/0\1/').gsub(/\/(\d)\Z/, '/0\1')
         return date
     end
@@ -144,6 +158,7 @@ scraper = LinkScraper.new([
     'https://www.bagpipeonline.com/opinions-archive',
     'https://www.bagpipeonline.com/sports-archive'])
 scraper.set_min_date ARGV[2] || ""
+BagpipeArticle.print_header
 scraper.scrape.each do |articleLink|
     $logFile.write "Reading: #{articleLink}...\n"
     article = BagpipeArticle.new(articleLink)
