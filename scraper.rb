@@ -102,7 +102,7 @@ class BagpipeArticle
     end
 
     def get_date
-        @link.match(/\.com\/\w+\/(\d*\/\d*\/\d*)/)[1]
+        LinkScraper.get_date(@link.match(/\.com\/\w+\/(\d*\/\d*\/\d*)/)[1])
     end
 
     def self.print_header
@@ -121,10 +121,10 @@ class LinkScraper
     end
 
     def set_min_date date
-        @minDate = get_date date
+        @minDate = LinkScraper.get_date date
     end
 
-    def get_date string, errDate = '1970/1/1'
+    def self.get_date string, errDate = '1970/1/1'
         match = string.match(/\d{4}\/\d\d?\/\d\d?/) || [errDate]
         date = match[0]
         date = date.gsub(/\/(\d)\//, '/0\1/').gsub(/\/(\d)\Z/, '/0\1')
@@ -139,7 +139,7 @@ class LinkScraper
                 .get_block(/(?<=\<a href=")[^"]*/)                          # filter to article links
                 .get_html
                 .each do |linkTail|
-                    if !@minDate || @minDate <= get_date(linkTail)
+                    if !@minDate || @minDate <= LinkScraper.get_date(linkTail)
                         @links << 'https://www.bagpipeonline.com' + linkTail
                     end
                 end
