@@ -68,13 +68,9 @@ class HtmlSubsection
             }
         }
         return text
-            .gsub(/“|”/, '"')
-            .gsub(/‘|’/, "'")
-            .gsub(/\n+/, "\n\n")
-            .gsub(/(&nbsp;| )+/, " ")
-            .gsub(/&lt;|&gt;/, "&lt;" => "<", "&gt;" => ">")
-            .gsub("&amp;", "&")
-            .gsub(/[^a-zA-Z0-9,:;'"\.\!\?\@\#\$\%\&\*\-\+\=\/\{\}\[\]\(\)\<\>\n]/, " ")
+            .gsub(/&lt;|&gt;|&nbsp|&amp/, "&lt;" => "<", "&gt;" => ">", "&nbsp;" => " ", "&amp;" => "&")
+            .gsub(/\s+/, " ")
+            .gsub("|", "/")
     end
 
     def get_html
