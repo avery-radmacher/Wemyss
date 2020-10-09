@@ -15,7 +15,7 @@ where:
 
 Data is scraped in the following format:
 
-`link|title|date|category|author|||text`
+`link|title|date|category|author|||wordcount|text`
 
 ### Note about dates:
 

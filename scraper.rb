@@ -71,6 +71,7 @@ class HtmlSubsection
             .gsub(/&lt;|&gt;|&nbsp|&amp/, "&lt;" => "<", "&gt;" => ">", "&nbsp;" => " ", "&amp;" => "&")
             .gsub(/\s+/, " ")
             .gsub("|", "/")
+            .strip
     end
 
     def get_html
@@ -86,28 +87,33 @@ class BagpipeArticle
     def get_data
         source = consume(@link).to_HtmlSubsection
         article = source.get_block(/\<article class=.*?\<\/article\>/m)
-        @author = article.get_author
         @title = article.get_title
-        @text = article.get_block(/\<div class="sqs-block-content"\>.*?\<\/div\>/m).get_text
-        @category = get_category
         @date = get_date
+        @category = get_category
+        @author = article.get_author
+        @text = article.get_block(/\<div class="sqs-block-content"\>.*?\<\/div\>/m).get_text
+        @wordcount = count_words
+    end
+    
+    def get_date
+        LinkScraper.get_date(@link.match(/\.com\/\w+\/(\d*\/\d*\/\d*)/)[1])
     end
 
     def get_category
         @link.match(/\.com\/(\w+)/)[1]
     end
 
-    def get_date
-        LinkScraper.get_date(@link.match(/\.com\/\w+\/(\d*\/\d*\/\d*)/)[1])
+    def count_words
+        @text.count(' ') + 1
     end
 
     def self.print_header
-        $dataFile.write "link|title|date|category|author|gender|year|text\n"
+        $dataFile.write "link|title|date|category|author|gender|year|words|text\n"
     end
 
     def print_data
         text = @text.gsub(/\s+/, " ")
-        $dataFile.write "#{@link}|#{@title}|#{@date}|#{@category}|#{@author}|||#{text}\n"
+        $dataFile.write "#{@link}|#{@title}|#{@date}|#{@category}|#{@author}|||#{@wordcount}|#{text}\n"
     end
 end
 
